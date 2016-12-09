@@ -13,7 +13,7 @@ var offerOption =
 var servers =
 {
     'iceServers': [
-      { 'url' : 'turn:101.200.130.41', 'credential': '06102', 'username': 'big_joe' }
+      { 'url': 'turn:101.200.130.41', 'credential': '06102', 'username': 'big_joe' }
       //{ 'url' : 'turn:192.168.238.128','credential':'yundu2','username':'yundu2'}
       //{ 'url' : 'stun:stun.l.google.com:19302' },
       //{ 'url' : 'stun:stun.services.mozilla.com' }
@@ -83,10 +83,11 @@ room.client.shutDownPC = function () {
     url = completeUrl(url);
 
     window.location.href = url;
+
 }
 
 //弹出模态框提示电话
-room.client.receiveCall = function(){
+room.client.receiveCall = function () {
     pickupModal.classList.toggle('modal-hide');
 }
 
@@ -116,7 +117,7 @@ room.client.receiveDisableCallBtn = function () {
 /*------------------------------------------------------------*/
 
 function call() {
-    if(pc === null)
+    if (pc === null)
         InitPC();
     pc.createOffer(offerOption).then(createOfferSuccessHandler, errorHandler);
     room.server.sendCall();
@@ -133,7 +134,7 @@ function hangupCall() {
 }
 
 function pickUpCall() {
-    if(pc === null)
+    if (pc === null)
         InitPC();
 
     pc.setRemoteDescription(remoteDesc).then(setRemoteDescSuccessHandler, errorHandler);
@@ -176,7 +177,7 @@ function initElement() {
     cancelBtn = document.getElementById('cancel_btn');
     pickupBtn = document.getElementById('pickup_btn');
     refuseBtn = document.getElementById('refuse_btn');
-    
+
     pickupModal = document.getElementById('pickup_modal');
     hangupModal = document.getElementById('hangup_modal');
 
@@ -198,8 +199,7 @@ function addListener() {
 
 //初始化p2p连接
 //必须在本地createOffer前初始化远程的peerconnection
-function InitPC()
-{
+function InitPC() {
     pc = new RTCPeerConnection(servers);
     pc.onicecandidate = onIceCandidateHandler;
 }
@@ -257,7 +257,7 @@ function setLocalDescSuccessHandler(descJson) {
 function setRemoteDescSuccessHandler() {
 
     //在setRemoteDescription之后调用，否则会报错dom exception ： error processing ice
-    remoteCandidates.forEach(function (curCandidate,index) {
+    remoteCandidates.forEach(function (curCandidate, index) {
         pc.addIceCandidate(new RTCIceCandidate(curCandidate)).then(function () { addIceCandidateSuccessHandler(index); }, errorHandler);
     });
 
@@ -267,13 +267,13 @@ function setRemoteDescSuccessHandler() {
 //创建offer成功
 function createOfferSuccessHandler(desc) {
 
-    pc.setLocalDescription(desc).then(function () { setLocalDescSuccessHandler(JSON.stringify({'desc' : desc}));} , errorHandler);
+    pc.setLocalDescription(desc).then(function () { setLocalDescSuccessHandler(JSON.stringify({ 'desc': desc })); }, errorHandler);
 }
 
 //创建answer成功
 function createAnswerSuccessHandler(desc) {
 
-    pc.setLocalDescription(desc).then(function () { setLocalDescSuccessHandler(JSON.stringify({ 'desc': desc }));}, errorHandler);
+    pc.setLocalDescription(desc).then(function () { setLocalDescSuccessHandler(JSON.stringify({ 'desc': desc })); }, errorHandler);
     console.log('create answer success');
 }
 
@@ -298,6 +298,7 @@ function getLocalStream() {
 function completeUrl(url) {
 
     var slashReg = /\/$/;
+    var ipReg = /.\d+\/$/;
     var portReg = /:\d+\/$/;
     var controllerReg = /VideoChat\/$/;
     var actionReg = /Index\/$/;
@@ -312,7 +313,7 @@ function completeUrl(url) {
     if (!hasSlash)
         url += '/';
 
-    if (portReg.test(url)) {
+    if (portReg.test(url) || ipReg.test(url)) {
 
         url += 'VideoChat/ChatUnavailabel/';
         return url;
@@ -334,6 +335,6 @@ function completeUrl(url) {
 //调用该方法后才能触发 hub.OnConnected事件
 $.connection.hub.start().done(
     function () {
-        console.log('hub connected ' + $.connection.hub.id + $.connection.videoHub);
+        console.log('hub connected ');
     }
 )
