@@ -1,0 +1,20 @@
+﻿html,body {
+
+    width:100%;
+
+    margin:0;
+    padding:0;
+    text-align:center;
+
+    background-color:#EC644B;
+}
+.div-warn{
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 200px;
+    color: #ECECEC;
+    font-weight: 500;
+    font-size: 50px;
+    font-family: 'Microsoft YaHei';
+}

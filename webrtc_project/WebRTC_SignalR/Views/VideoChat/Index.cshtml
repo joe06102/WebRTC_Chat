@@ -1,0 +1,58 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>VideoChat</title>
+    <link rel="stylesheet" href="~/Content/Css/index.css" />
+    <script src="~/Scripts/jquery-1.6.4.min.js"></script>
+    <script src="~/Scripts/jquery.signalR-2.2.1.min.js"></script>
+    <script src="~/signalr/hubs"></script>
+    <script src="~/Scripts/adapter.js"></script>
+</head>
+<body>
+    @*<div id="header_wrapper">
+        <p>This is Head</p>
+    </div>*@
+    <div id="content_wrapper">
+        <div id="video_wrapper" class="video_wrapper">
+            <video id="localCam" class="localCam" autoplay muted></video>
+            <video id="remoteCam" class="remoteCam" autoplay></video>
+        </div>
+        <div id="btn_wrapper" class="btn_wrapper">
+            <button id="call_btn" class="btn btn-green">呼叫</button>
+            <button id="hangup_btn" class="btn btn-red btn-hide">挂断</button>
+        </div>
+    </div>
+    <div>
+        <div id="pickup_modal" class="modal-show modal-hide">
+            <div class="prompt_content_wrapper">
+                <div class="img_wrapper">
+                    <img src="~/Content/Img/ic_phone_white_48dp.png"/>
+                    <div class="anime-mask"></div>
+                </div>
+                <p class="prompt_info-below">视频通话请求</p>
+            </div>
+            <div class="btn_wrapper">
+                <button id="pickup_btn" class="btn btn-green">接收</button>
+                <button id="refuse_btn" class="btn btn-red">拒绝</button>
+            </div>
+        </div>
+        <div id="hangup_modal" class="modal-show modal-hide">
+            <p class="prompt_info-below">等待对方接受邀请......</p>
+            <div class="btn_wrapper">
+                <button id="cancel_btn" class="btn btn-red">取消</button>
+            </div>
+        </div>
+    </div>
+    @*<div id="footer_wrapper">
+        <p>This is Footer</p>
+    </div>*@
+    <script src="~/Scripts/index.js"></script>
+</body>
+</html>
