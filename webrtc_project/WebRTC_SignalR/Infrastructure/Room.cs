@@ -7,6 +7,7 @@ namespace WebRTC_SignalR.Infrastructure
 {
     public class Room
     {
+        #region Field
         private const int MAX_NUMBER = 2 ;
 
         private static Room instance = null;
@@ -14,13 +15,21 @@ namespace WebRTC_SignalR.Infrastructure
         private static readonly object locker = new object();
 
         private static IList<string> clients ;
-        
+        #endregion
+
+        #region Event
         /// <summary>
         /// 用户加入房间事件
         /// </summary>
         public event Action Join;
 
+        /// <summary>
+        /// 用户退出房间事件
+        /// </summary>
+        public event Action Quit;
+        #endregion
 
+        #region .Ctor
         private Room() 
         {
             clients = new List<string>();
@@ -40,15 +49,28 @@ namespace WebRTC_SignalR.Infrastructure
 
             return instance;
         }
+        #endregion
 
+        #region Property
         /// <summary>
         /// Join是否有订阅程序
         /// </summary>
-        public bool HasHandler
+        public bool JoinHasHandler
         {
             get 
             {
                 return Join != null;
+            }
+        }
+
+        /// <summary>
+        /// Quit是否有订阅程序
+        /// </summary>
+        public bool QuitHasHandler
+        {
+            get
+            {
+                return Quit != null;
             }
         }
 
@@ -84,7 +106,9 @@ namespace WebRTC_SignalR.Infrastructure
                 return clients.Count;
             }
         }
+        #endregion
 
+        #region Method
         /// <summary>
         /// 将用户添加到房间
         /// </summary>
@@ -95,7 +119,7 @@ namespace WebRTC_SignalR.Infrastructure
                 return;
 
             clients.Add(id);
-            if (HasHandler)
+            if (JoinHasHandler)
                 Join();
         }
 
@@ -112,8 +136,8 @@ namespace WebRTC_SignalR.Infrastructure
             {
                 clients.Remove(id);
 
-                if (HasHandler)
-                    Join();
+                if (QuitHasHandler)
+                    Quit();
             }
         }
 
@@ -127,6 +151,7 @@ namespace WebRTC_SignalR.Infrastructure
 
             return clients.Where(id => id != curId).FirstOrDefault();
         }
+        #endregion
 
     }
 }

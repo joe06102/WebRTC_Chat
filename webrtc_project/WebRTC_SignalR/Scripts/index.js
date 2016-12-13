@@ -1,3 +1,4 @@
+
 var room = $.connection.videoHub;
 
 var pc;
@@ -13,8 +14,7 @@ var offerOption =
 var servers =
 {
     'iceServers': [
-      { 'url': 'turn:101.200.130.41', 'credential': '06102', 'username': 'big_joe' }
-      //{ 'url' : 'turn:192.168.238.128','credential':'yundu2','username':'yundu2'}
+    { 'url': 'turn:101.200.130.41', 'credential': '06102', 'username': 'big_joe' }
       //{ 'url' : 'stun:stun.l.google.com:19302' },
       //{ 'url' : 'stun:stun.services.mozilla.com' }
     ]
@@ -41,19 +41,19 @@ var hangupModal;
 //接收对方发送的sdp数据
 room.client.receiveDesc = function (descJson) {
 
-    console.log('receive remote desc');
+    outputBox('receive remote desc');
 
     var descObj = JSON.parse(descJson);
     remoteDesc = descObj.desc;
 
     if (remoteDesc.type === 'offer') {
-        console.log('receive offer : ');
+        outputBox('receive offer');
         console.log(remoteDesc);
     }
 
     if (remoteDesc.type === 'answer') {
         pc.setRemoteDescription(remoteDesc).then(setRemoteDescSuccessHandler, errorHandler);
-        console.log('receive answer : ');
+        outputBox('receive answer');
         console.log(remoteDesc);
     }
 }
@@ -63,43 +63,34 @@ room.client.receiveCandidate = function (candidateJson) {
     var candidateObj = JSON.parse(candidateJson);
     remoteCandidates.push(candidateObj.cand);
 
-    console.log('receive candidate :')
-    console.log(candidateObj.cand)
+    console.log('receive candidate');
+    //console.log(candidateObj.cand)
     //pc.addIceCandidate(new RTCIceCandidate(candidateObj.cand)).then(addIceCandidateSuccessHandler, errorHandler);
 }
 
 //接收广播信息
 room.client.receiveMsg = function (msg) {
-    console.log(msg);
+
+    outputBox(msg);
 }
 
 //关闭连接
 room.client.shutDownPC = function () {
 
-    $.connection.hub.stop();//不支持回调
+    fallBackToOrigin();
 
-    var url = window.location.href;
-
-    url = completeUrl(url);
-
-    window.location.href = url;
+    disconnectAndRedirectClient();
 
 }
 
 //弹出模态框提示电话
 room.client.receiveCall = function () {
-    pickupModal.classList.toggle('modal-hide');
+    showPickupModal();
 }
 
-//通话成功，关闭挂断窗口
-room.client.receiveCollapseHangupModal = function () {
-    hangupModal.classList.toggle('modal-hide');
-}
-
-//通话成功，隐藏呼叫按钮，显示挂断按钮
-room.client.receiveShowHangupBtn = function () {
-    callBtn.classList.toggle('btn-hide');
-    hangupBtn.classList.toggle('btn-hide');
+//通话成功,显示通话界面
+room.client.receiveShowCalling = function () {
+    showCalling();
 }
 
 //当房间有2个人时启动呼叫
@@ -117,43 +108,40 @@ room.client.receiveDisableCallBtn = function () {
 /*------------------------------------------------------------*/
 
 function call() {
-    if (pc === null)
-        InitPC();
+
     pc.createOffer(offerOption).then(createOfferSuccessHandler, errorHandler);
     room.server.sendCall();
-    hangupModal.classList.toggle('modal-hide');
+    showCallingModal();
+    outputBox(' call  started ');
 }
 
 function cancelCall() {
+
     room.server.shutDownConnection();
-    hangupModal.classList.toggle('modal-hide');
+    outputBox(' call cancelled ');
 }
 
 function hangupCall() {
+
     room.server.shutDownConnection();
+    outputBox(' call hung up ');
 }
 
 function pickUpCall() {
-    if (pc === null)
-        InitPC();
 
     pc.setRemoteDescription(remoteDesc).then(setRemoteDescSuccessHandler, errorHandler);
     pc.createAnswer().then(createAnswerSuccessHandler, errorHandler);
 
-    pickupModal.classList.toggle('modal-hide');
-    room.server.sendCollapseHangupModal();
-    room.server.sendShowHangupBtn();
+    room.server.sendShowCalling();
 
-    console.log('pick up the call');
+    outputBox(' call picked up ');
 }
 
 function refuseCall() {
 
     room.server.shutDownConnection();
 
-    pickupModal.classList.toggle('modal-hide');
-
-    console.log('call refused');
+    outputBox(' call refused ');
 }
 
 
@@ -200,8 +188,11 @@ function addListener() {
 //初始化p2p连接
 //必须在本地createOffer前初始化远程的peerconnection
 function InitPC() {
+
     pc = new RTCPeerConnection(servers);
     pc.onicecandidate = onIceCandidateHandler;
+
+    outputBox('peer connection initialized ');
 }
 
 
@@ -221,22 +212,24 @@ function onResizeHandler() {
 
 //本地摄像头回调程序
 function getUserMediaSuccessHandler(stream) {
+
     pc.onaddstream = addStreamHandler;
     pc.addStream(stream);
     localCam.srcObject = stream;
-    console.log('get local media success');
+    outputBox('get local media success');
 }
 
 function addStreamHandler(event) {
+
     remoteCam.srcObject = event.stream;
-    console.log('add remote stream success');
+    outputBox('add remote stream success');
 }
 
 //createOffer之后，且候选人可用时触发
 function onIceCandidateHandler(event) {
 
     if (event.candidate !== null) {
-        console.log("candidate availabel : " + event.candidate.candidate);
+        //console.log("candidate hangler : " + event.candidate.candidate);
         room.server.sendCandidate(JSON.stringify({ 'cand': event.candidate }));
     }
 }
@@ -251,6 +244,7 @@ function addIceCandidateSuccessHandler(candidateIndex) {
 function setLocalDescSuccessHandler(descJson) {
 
     room.server.sendDesc(descJson);
+    outputBox('set local desc success ');
 }
 
 //设置远程sdp成功
@@ -261,26 +255,78 @@ function setRemoteDescSuccessHandler() {
         pc.addIceCandidate(new RTCIceCandidate(curCandidate)).then(function () { addIceCandidateSuccessHandler(index); }, errorHandler);
     });
 
-    console.log('set remote desc success');
+    outputBox('set remote desc success');
 }
 
 //创建offer成功
 function createOfferSuccessHandler(desc) {
 
     pc.setLocalDescription(desc).then(function () { setLocalDescSuccessHandler(JSON.stringify({ 'desc': desc })); }, errorHandler);
+
+    outputBox('create offer success ');
 }
 
 //创建answer成功
 function createAnswerSuccessHandler(desc) {
 
     pc.setLocalDescription(desc).then(function () { setLocalDescSuccessHandler(JSON.stringify({ 'desc': desc })); }, errorHandler);
-    console.log('create answer success');
+    outputBox('create answer success');
 }
 
 //回调异常处理函数
 function errorHandler(error) {
 
-    console.log(error);
+    outputBox(error);
+}
+
+/* -------------------------修改状态---------------------- */
+/*------------------------------------------------------------*/
+//显示最初界面
+function fallBackToOrigin() {
+
+    callBtn.classList.remove('btn-hide');
+    hangupBtn.classList.add('btn-hide');
+    cancelBtn.classList.add('btn-hide');
+    pickupBtn.classList.add('btn-hide');
+    refuseBtn.classList.add('btn-hide');
+    pickupModal.classList.add('modal-hide');
+    hangupModal.classList.add('modal-hide');
+}
+
+//显示发起通话界面
+function showCallingModal() {
+
+    callBtn.classList.add('btn-hide');
+    hangupBtn.classList.add('btn-hide');
+    cancelBtn.classList.remove('btn-hide');
+    pickupBtn.classList.add('btn-hide');
+    refuseBtn.classList.add('btn-hide');
+    pickupModal.classList.add('modal-hide');
+    hangupModal.classList.remove('modal-hide');
+}
+
+//显示接听通话界面
+function showPickupModal() {
+
+    callBtn.classList.add('btn-hide');
+    hangupBtn.classList.add('btn-hide');
+    cancelBtn.classList.add('btn-hide');
+    pickupBtn.classList.remove('btn-hide');
+    refuseBtn.classList.remove('btn-hide');
+    pickupModal.classList.remove('modal-hide');
+    hangupModal.classList.add('modal-hide');
+}
+
+//显示通话界面
+function showCalling() {
+
+    callBtn.classList.add('btn-hide');
+    hangupBtn.classList.remove('btn-hide');
+    cancelBtn.classList.add('btn-hide');
+    pickupBtn.classList.add('btn-hide');
+    refuseBtn.classList.add('btn-hide');
+    pickupModal.classList.add('modal-hide');
+    hangupModal.classList.add('modal-hide');
 }
 
 
@@ -330,6 +376,49 @@ function completeUrl(url) {
         return url.replace('Index', 'ChatUnavailabel');
     }
 
+}
+
+//挂断后跳转用户
+function disconnectAndRedirectClient() {
+
+    var url = window.location.href;
+
+    var supportReg = /\?\w+\=\w+/;
+
+    if (!supportReg.test(url)) {
+        $.connection.hub.stop();//不支持回调
+        url = completeUrl(url);
+        window.location.href = url;
+        return;
+    }
+
+    destroyPC();
+}
+
+//释放p2p连接
+function destroyPC() {
+
+    if (!!pc) {
+        pc.close();
+        pc = null;
+    }
+
+    remoteDesc = null;
+    remoteCandidates = [];
+
+    if (!pc) {
+        InitPC();
+        getLocalStream();
+    }
+}
+
+function outputBox(msg) {
+
+    console.log('******************************');
+    console.log('*                            *');
+    console.log('*      '  + msg +     '      *');
+    console.log('*                            *');
+    console.log('******************************');
 }
 
 //调用该方法后才能触发 hub.OnConnected事件

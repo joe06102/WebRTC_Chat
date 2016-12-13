@@ -21,10 +21,10 @@ namespace WebRTC_SignalR.Hubs
 
         public VideoHub()
         {
-            if(!videoRoom.HasHandler)
+            if(!videoRoom.JoinHasHandler)
             {
                 videoRoom.Join += sendEnableCallBtn;
-                videoRoom.Join += sendDisableCallBtn;
+                videoRoom.Quit += sendDisableCallBtn;
             }
 
         }
@@ -91,21 +91,21 @@ namespace WebRTC_SignalR.Hubs
         /// <summary>
         /// 对方接受邀请后关闭挂断界面，开始通话
         /// </summary>
-        public void sendCollapseHangupModal()
-        {
-            var otherId = videoRoom.GetOtherMember(Context.ConnectionId);
-            if (!string.IsNullOrEmpty(otherId))
-                Clients.Client(otherId).receiveCollapseHangupModal();
-        }
+        //public void sendCollapseHangupModal()
+        //{
+        //    var otherId = videoRoom.GetOtherMember(Context.ConnectionId);
+        //    if (!string.IsNullOrEmpty(otherId))
+        //        Clients.Client(otherId).receiveCollapseHangupModal();
+        //}
 
         /// <summary>
-        /// 对方接受邀请后显示挂断按钮
+        /// 对方接受邀请后显示通话界面
         /// </summary>
-        public void sendShowHangupBtn()
+        public void sendShowCalling()
         {
             var otherId = videoRoom.GetOtherMember(Context.ConnectionId);
             if (!string.IsNullOrEmpty(otherId))
-                Clients.All.receiveShowHangupBtn();
+                Clients.All.receiveShowCalling();
         }
 
         /// <summary>
